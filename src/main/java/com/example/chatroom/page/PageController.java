@@ -1,5 +1,7 @@
 package com.example.chatroom.page;
 
+import com.example.chatroom.entity.SysUser;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -20,6 +22,8 @@ public class PageController {
 
     @GetMapping(value = {"/", "index"})
     public String index() {
+        SysUser user = (SysUser) SecurityUtils.getSubject().getPrincipal();
+        System.out.println(user.getUserName());
         return "index";
     }
 }

@@ -1,6 +1,7 @@
 package com.example.chatroom.config;
 
 import com.example.chatroom.shiro.MyShiroRealm;
+import com.example.chatroom.shiro.filter.KickOutSessionControlFilter;
 import com.google.common.collect.Maps;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
@@ -60,7 +61,9 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setSuccessUrl("/");
         // 未授权界面;
         shiroFilterFactoryBean.setUnauthorizedUrl("/expire");
-
+        Map<String, Filter> filtersMap = Maps.newLinkedHashMap();
+        filtersMap.put("kickOut", kickoutSessionControlFilter());
+        shiroFilterFactoryBean.setFilters(filtersMap);
         // 权限控制map.
         Map<String, String> filterChainDefinitionMap = Maps.newLinkedHashMap();
         filterChainDefinitionMap.put("/assets/**", "anon");
@@ -73,7 +76,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/api/login/**", "anon");
         filterChainDefinitionMap.put("/logout", "logout");
         filterChainDefinitionMap.put("/expire", "authc");
-        filterChainDefinitionMap.put("/**", "authc");
+        filterChainDefinitionMap.put("/**", "authc,kickOut");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         logger.info("Shiro拦截器工厂类注入成功");
         return shiroFilterFactoryBean;
@@ -184,5 +187,27 @@ public class ShiroConfig {
         RedisCacheManager redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager());
         return redisCacheManager;
+    }
+
+    /**
+     * 限制同一账号登录同时登录人数控制
+     *
+     * @return
+     */
+    public KickOutSessionControlFilter kickoutSessionControlFilter() {
+        KickOutSessionControlFilter kickoutSessionControlFilter = new KickOutSessionControlFilter();
+        //使用cacheManager获取相应的cache来缓存用户登录的会话；用于保存用户—会话之间的关系的；
+        //这里我们还是用之前shiro使用的redisManager()实现的cacheManager()缓存管理
+        //也可以重新另写一个，重新配置缓存时间之类的自定义缓存属性
+        kickoutSessionControlFilter.setCacheManager(cacheManager());
+        //用于根据会话ID，获取会话进行踢出操作的；
+        kickoutSessionControlFilter.setSessionManager(sessionManager());
+        //是否踢出后来登录的，默认是false；即后者登录的用户踢出前者登录的用户；踢出顺序。
+        kickoutSessionControlFilter.setKickOutAfter(false);
+        //同一个用户最大的会话数，默认1；比如2的意思是同一个用户允许最多同时两个人登录；
+        kickoutSessionControlFilter.setMaxSession(1);
+        //被踢出后重定向到的地址；
+        kickoutSessionControlFilter.setKickOutUrl("/login");
+        return kickoutSessionControlFilter;
     }
 }
