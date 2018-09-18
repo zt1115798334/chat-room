@@ -1,7 +1,5 @@
 package com.example.chatroom.page;
 
-import com.example.chatroom.entity.SysUser;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 

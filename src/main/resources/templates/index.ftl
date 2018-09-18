@@ -3,58 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>聊天框</title>
-    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
-    <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
-    <script src="/assets/jquery/jquery-3.1.1.min.js"></script>
-    <script type="text/javascript">
-        //ws /ws 的endpoint
-        var sock = new SockJS('/ws'); //跟你的WebSocketConfig中配置要一致
-        var stomp = Stomp.over(sock);
-        //建立连接监听
-        stomp.connect({}, function (frame) {
-            stomp.subscribe('/topic/public', function (response) {
-                $("#output").append('<b>公共消息：' + response.body + '</b><br/>');
-            });
-            //订阅 /user/topic/chat 发送的消息，这里与
-            //在控制器的messagingTemplate.convertAndSendToUser中定义的订阅地址保持一致
-            //这里多了 /user ，并且这个 /user是必须的，使用了 /user 才会将消息发送到指定用户
-            stomp.subscribe("/user/topic/chat", function handleNotification(message) {
-                console.log("msg" + message);
-                $("#output").append('<b>' + message.body + '</b><br/>');
-            });
-        });
 
-        //发送私有消息指定的人能收到
-        function sendPrivateMsg() {
-            stomp.send("/app/sendPrivateMessage", {}, JSON.stringify({
-                'content': $("#text").val(),         //消息内容
-                'receiver': $("#receiver").val()    //接收人
-            }));
-        }
-
-        //发送公共消息 谁都能收到，自己也能收到
-        function sendPublicMsg() {
-            stomp.send("/app/sendPublicMessage", {}, JSON.stringify({
-                'content': $("#text").val(),         //消息内容
-            }));
-        }
-
-        //断开连接
-        function stop() {
-            sock.close();
-        }
-    </script>
 </head>
 <body>
-<div>
-    <textarea rows="4" cols="60" name="text" id="text"> </textarea> <br/>
-    接收人:
-    <input id="receiver" value=""/> <br/>
-    <input type="button" value="私有消息" onclick="sendPrivateMsg()"/>
-    <input type="button" value="公共消息" onclick="sendPublicMsg()"/>
-    <input id="stop" type="button" onclick="stop()" value="断开"/>
-
+<input id="text" type="text"/>
+<button onclick="send()">Send</button>
+<button onclick="closeWebSocket()">Close</button>
+<div id="message">
 </div>
-<div id="output"></div>
 </body>
+<script type="text/javascript">
+    var webSocket = null;
+
+    //判断当前浏览器是否支持WebSocket
+    if ('WebSocket' in window) {
+        webSocket = new WebSocket("ws://127.0.0.1:8081/webSocketServer");
+    }
+    else {
+        alert('Not support webSocket')
+    }
+
+    //连接发生错误的回调方法
+    webSocket.onerror = function () {
+        setMessageInnerHTML("error");
+    };
+
+    //连接成功建立的回调方法
+    webSocket.onopen = function (event) {
+        setMessageInnerHTML("open");
+    }
+
+    //接收到消息的回调方法
+    webSocket.onmessage = function (event) {
+        setMessageInnerHTML(event.data);
+    }
+
+    //连接关闭的回调方法
+    webSocket.onclose = function () {
+        setMessageInnerHTML("close");
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function () {
+        webSocket.close();
+    }
+
+    //将消息显示在网页上
+    function setMessageInnerHTML(innerHTML) {
+        document.getElementById('message').innerHTML += innerHTML + '<br/>';
+    }
+
+    //关闭连接
+    function closeWebSocket() {
+        webSocket.close();
+    }
+
+    //发送消息
+    function send() {
+        var message = document.getElementById('text').value;
+        webSocket.send(message);
+        webSocket
+    }
+</script>
 </html>

@@ -1,72 +1,42 @@
 package com.example.chatroom.config;
 
+import com.example.chatroom.entity.SysUser;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
-import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
-import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+
+import javax.websocket.HandshakeResponse;
+import javax.websocket.server.HandshakeRequest;
+import javax.websocket.server.ServerEndpointConfig;
 
 /**
  * Created with IntelliJ IDEA.
  *
  * @author zhang tong
- * date: 2018/9/14 13:06
+ * date: 2018/9/18 10:55
  * description:
  */
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
+public class WebSocketConfig extends ServerEndpointConfig.Configurator {
+    /**
+     * 修改握手,就是在握手协议建立之前修改其中携带的内容
+     * @param sec
+     * @param request
+     * @param response
+     */
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        //允许客户端使用socketJs方式访问，访问点为ws，允许跨域
-        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+    public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
+        SysUser sysUser = (SysUser)SecurityUtils.getSubject().getPrincipal();
+        System.out.println("SpringWebSocketConfig.modifyHandshake");
+        sec.getUserProperties().put("user", sysUser);
+        //sec.getUserProperties().put("name", "wb");
+        super.modifyHandshake(sec, request, response);
     }
-
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-
-        //订阅广播 Broker（消息代理）名称
-        registry.enableSimpleBroker("/topic"); // Enables a simple in-memory broker
-        //全局使用的订阅前缀（客户端订阅路径上会体现出来）
-        registry.setApplicationDestinationPrefixes("/app/");
-        //点对点使用的订阅前缀（客户端订阅路径上会体现出来），不设置的话，默认也是/user/
-        registry.setUserDestinationPrefix("/user");
-    }
-
-    @Override
-    public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
-        registry.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
-            @Override
-            public WebSocketHandler decorate(final WebSocketHandler handler) {
-                return new WebSocketHandlerDecorator(handler) {
-
-                    @Override
-                    public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
-                        // 客户端与服务器端建立连接后，此处记录谁上线了
-                        String username = session.getPrincipal().getName();
-                        System.out.println("online: " + username);
-                        super.afterConnectionEstablished(session);
-                    }
-
-                    @Override
-                    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-                        // 客户端与服务器端断开连接后，此处记录谁下线了
-                        String username = session.getPrincipal().getName();
-                        System.out.println("offline: " + username);
-                        super.afterConnectionClosed(session, closeStatus);
-                    }
-                };
-            }
-        });
-
+    @Bean
+    public ServerEndpointExporter serverEndpointExporter() {
+        //这个对象说一下，貌似只有服务器是tomcat的时候才需要配置,具体我没有研究
+        return new ServerEndpointExporter();
     }
 
 }
