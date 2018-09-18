@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.chatroom.controller.base.AbstractController;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.session.Session;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

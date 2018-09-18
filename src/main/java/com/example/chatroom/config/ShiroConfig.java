@@ -89,7 +89,7 @@ public class ShiroConfig {
         securityManager.setRealm(myShiroRealm());
         // 自定义缓存实现 使用redis
         // TODO: 2018/9/5 暂时关闭权限存储缓存功能，现在每次他都会走MyShiroRealm。doGetAuthorizationInfo权限认证方法，暂时关闭的原因是每个用户的权限保存都一样，需要解决
-//        securityManager.setCacheManager(cacheManager());
+        securityManager.setCacheManager(cacheManager());
         // 自定义session管理 使用redis
         securityManager.setSessionManager(sessionManager());
         //注入记住我管理器;

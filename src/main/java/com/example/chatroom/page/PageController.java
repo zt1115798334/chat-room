@@ -22,8 +22,6 @@ public class PageController {
 
     @GetMapping(value = {"/", "index"})
     public String index() {
-        SysUser user = (SysUser) SecurityUtils.getSubject().getPrincipal();
-        System.out.println(user.getUserName());
         return "index";
     }
 }

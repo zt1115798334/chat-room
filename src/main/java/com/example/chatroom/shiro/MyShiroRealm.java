@@ -10,12 +10,9 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.support.DefaultSubjectContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -52,19 +49,8 @@ public class MyShiroRealm extends AuthorizingRealm {
         if (!sysUserOptional.isPresent()) {
             throw new AccountException("帐号或密码不正确！");
         }
-
-        //处理session
-        DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-        DefaultWebSessionManager sessionManager = (DefaultWebSessionManager) securityManager.getSessionManager();
-        Collection<Session> sessions = sessionManager.getSessionDAO().getActiveSessions();//获取当前已登录的用户session列表
-        for (Session session : sessions) {
-            //清除该用户以前登录时保存的session
-            Object attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
-            System.out.println("attribute = " + attribute);
-            if (username.equals(String.valueOf(attribute))) {
-                sessionManager.getSessionDAO().delete(session);
-            }
-        }
+        Subject subject = SecurityUtils.getSubject();
+        Session session = subject.getSession();
 
         return new SimpleAuthenticationInfo(sysUser, password, getName());
     }

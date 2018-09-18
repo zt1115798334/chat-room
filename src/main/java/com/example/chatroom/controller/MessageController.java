@@ -35,9 +35,8 @@ public class MessageController {
     @MessageMapping("/sendPrivateMessage")
     //这里是客户端发送消息对应的路径，等于configureMessageBroker中配置的setApplicationDestinationPrefixes + 这路径即 /app/sendPrivateMessage
     public void sendPrivateMessage(@Payload ChatMessage msg) {
-        SysUser user = (SysUser) SecurityUtils.getSubject().getPrincipal();
-        System.out.println("user.getUserName() = " + user.getUserName());
-        msg.setSender("admin");
+
+        msg.setSender("com.example.chatroom.entity.SysUser@5164cf8a");
         //将消息推送到指定路径上
         messagingTemplate.convertAndSendToUser(msg.getReceiver(), "topic/chat", msg);
     }

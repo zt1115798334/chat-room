@@ -1,6 +1,6 @@
 package com.example.chatroom.config;
 
-import com.example.chatroom.entity.SysUser;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.CloseStatus;
@@ -23,6 +23,7 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //允许客户端使用socketJs方式访问，访问点为ws，允许跨域
@@ -46,11 +47,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public WebSocketHandler decorate(final WebSocketHandler handler) {
                 return new WebSocketHandlerDecorator(handler) {
+
                     @Override
                     public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
                         // 客户端与服务器端建立连接后，此处记录谁上线了
                         String username = session.getPrincipal().getName();
-                        System.out.print("online: " + username);
+                        System.out.println("online: " + username);
                         super.afterConnectionEstablished(session);
                     }
 
@@ -58,7 +60,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
                         // 客户端与服务器端断开连接后，此处记录谁下线了
                         String username = session.getPrincipal().getName();
-                        System.out.print("offline: " + username);
+                        System.out.println("offline: " + username);
                         super.afterConnectionClosed(session, closeStatus);
                     }
                 };
