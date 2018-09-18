@@ -6,6 +6,7 @@
 
 </head>
 <body>
+<a href="/voice">通往语音</a>
 <input id="text" type="text"/>
 <button onclick="send()">Send</button>
 <button onclick="closeWebSocket()">Close</button>
