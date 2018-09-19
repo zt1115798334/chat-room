@@ -45,7 +45,7 @@ public class ChatService {
      * @return
      */
     public static String readyForOne(String thisId,String id){
-        if(OneReadyStorage.isReady(thisId)){//自己已经准备过,取消准备
+        if(OneReadyStorage.isReady(thisId)){//自己已经准备过,取消准备(自己正在对话则取消对话)
             OneReadyStorage.delCall(thisId);
         }else{
             if(ChatService.queryId(thisId,id)){//再次检测对方是否可以对话,结果为可发起对话
@@ -88,7 +88,7 @@ public class ChatService {
     public static OneReadyResponseConfig signallingOffer(String thisId){
         OneReadyResponseConfig map = new OneReadyResponseConfig();
         //先找到当前发送者与谁建立了对话关系
-        String answerId = OneReadyStorage.findReadyAnswerBycallId(thisId);
+        String answerId = OneReadyStorage.findReadyAnswerByCallId(thisId);
         if(answerId == null){//非法发送信令,根本不存在通话准备信息
             if(answerId == null){
                 map.setMsg("非法发送信令,根本不存在通话准备信息");
@@ -108,7 +108,7 @@ public class ChatService {
      * @return
      */
     public static String oneChannelClose(String thisId){
-        String answerId = OneReadyStorage.findReadyAnswerBycallId(thisId);
+        String answerId = OneReadyStorage.findReadyAnswerByCallId(thisId);
         if(answerId == null){
             return null;
         }

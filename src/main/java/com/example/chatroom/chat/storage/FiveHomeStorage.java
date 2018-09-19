@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * description: 五人群组房间存储
  */
 public class FiveHomeStorage {
+
     private static int homeSize = 0;//已经创建过多少房间 计数器
     private static final ConcurrentHashMap<String/*个人id*/,String/*所在房号*/> userAndHome = new ConcurrentHashMap<String,String/*所在房号*/>();
     private static final ConcurrentHashMap<String/*房号ID*/, FiveHomeConfig> homeAndUser = new ConcurrentHashMap<String,FiveHomeConfig>();

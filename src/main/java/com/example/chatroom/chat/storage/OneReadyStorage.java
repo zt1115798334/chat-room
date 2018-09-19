@@ -60,7 +60,7 @@ public class OneReadyStorage {
 
     /**
      * 被呼叫方拒绝准备
-     * @param callId
+     * @param answerId
      */
     public static void delAnswer(String answerId){
         OneReadyConfig callId = answer.get(answerId);
@@ -91,10 +91,10 @@ public class OneReadyStorage {
 
     /**
      * 通过一个id 找到与它建立远程的 id
-     * @param call
+     * @param thisId
      * @return
      */
-    public static String findReadyAnswerBycallId(String thisId){
+    public static String findReadyAnswerByCallId(String thisId){
         OneReadyConfig callOc = call.get(thisId);
         if(callOc == null){
             OneReadyConfig answerOc = answer.get(thisId);
